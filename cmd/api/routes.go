@@ -10,14 +10,15 @@ func (app *application) routes() http.Handler {
 	// Initialise a new httprouter router instance.
 	router := httprouter.New()
 
-	// Register the relevant methods, URL patters and handler functions for our
-	// endpoints using the HandlerFunc() method. Note that http.MethodGet and
-	// http.MethodPost are constants which equate to the strings "GET" and "POST"
-	// respectively.
+	// Define custom error handlers for 404 and 405 responses.
+	router.NotFound = http.HandlerFunc(app.notFoundResponse)
+	router.MethodNotAllowed = http.HandlerFunc(app.methodNotAllowedResponse)
+
+	// Set up route handlers
 	router.HandlerFunc(http.MethodGet, "/v1/healthcheck", app.healthcheckHandler)
 	router.HandlerFunc(http.MethodPost, "/v1/movies", app.createMovieHandler)
 	router.HandlerFunc(http.MethodGet, "/v1/movies/:id", app.showMovieHandler)
 
-	// Return the httprouter instance.
-	return router
+	// Return the httprouter instance (wrapped in our panic recovery middleware).
+	return app.recoverPanic(router)
 }
