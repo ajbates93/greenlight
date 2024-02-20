@@ -1,6 +1,7 @@
 package data
 
 import (
+	"database/sql"
 	"time"
 
 	"greenlight.alexbates.net/internal/validator"
@@ -14,6 +15,26 @@ type Movie struct {
 	Runtime   Runtime   `json:"runtime,omitempty,string"` // Movie runtime (in minutes)
 	Genres    []string  `json:"genres,omitempty"`         // Slice of genres for the movie
 	Version   int32     `json:"version"`                  // The version number starts at 1 and will be incremented each time the movie information is updated
+}
+
+type MovieModel struct {
+	DB *sql.DB
+}
+
+func (m MovieModel) Insert(movie *Movie) error {
+	return nil
+}
+
+func (m MovieModel) Get(id int64) (*Movie, error) {
+	return nil, nil
+}
+
+func (m MovieModel) Update(movie *Movie) error {
+	return nil
+}
+
+func (m MovieModel) Delete(id int64) error {
+	return nil
 }
 
 func ValidateMovie(v *validator.Validator, movie *Movie) {
