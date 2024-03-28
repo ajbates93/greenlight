@@ -11,6 +11,8 @@ import (
 	"greenlight.alexbates.net/internal/validator"
 )
 
+var AnonymousUser = &User{}
+
 // Note: "'-' means that the field will not be marshaled into JSON."
 type User struct {
 	ID        int64     `json:"id"`
@@ -20,6 +22,10 @@ type User struct {
 	Password  password  `json:"-"`
 	Activated bool      `json:"activated"`
 	Version   int       `json:"-"`
+}
+
+func (u *User) IsAnonymous() bool {
+	return u == AnonymousUser
 }
 
 // The plaintext field is a pointer to a string, so we're able to distinguish between a
