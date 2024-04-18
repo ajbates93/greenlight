@@ -3,9 +3,11 @@ package main
 import (
 	"context"
 	"database/sql"
+	"expvar"
 	"flag"
 	"log/slog"
 	"os"
+	"runtime"
 	"sync"
 	"time"
 
@@ -68,7 +70,7 @@ func main() {
 	flag.IntVar(&cfg.port, "port", 4000, "API server port")
 	flag.StringVar(&cfg.env, "env", "development", "Environment (development|staging|production)")
 
-	flag.StringVar(&cfg.db.dsn, "db-dsn", os.Getenv("GREENLIGHT_DB_DSN"), "PostgreSQL DSN")
+	flag.StringVar(&cfg.db.dsn, "db-dsn", " ", "PostgreSQL DSN")
 
 	flag.IntVar(&cfg.db.maxOpenConns, "db-max-open-conns", 25, "PostgreSQL max open connections")
 	flag.IntVar(&cfg.db.maxIdleConns, "db-max-idle-conns", 25, "PostgreSQL max idle connections")
@@ -101,6 +103,25 @@ func main() {
 
 	// Log a message to say that the connection pool has been successfully established.
 	logger.Info("database connection pool established")
+
+	// Publish a new "version" variable in the expvar handler containing our application
+	// version number
+	expvar.NewString("version").Set(version)
+
+	// Publish the number of active goroutines
+	expvar.Publish("goroutines", expvar.Func(func() any {
+		return runtime.NumGoroutine()
+	}))
+
+	// Publish the database connection pool statistics
+	expvar.Publish("database", expvar.Func(func() any {
+		return db.Stats()
+	}))
+
+	// Publish the current Unix timestamp
+	expvar.Publish("timestamp", expvar.Func(func() any {
+		return time.Now().Unix()
+	}))
 
 	// Declare an instance of the application struct, containing the config struct and the
 	// logger.
